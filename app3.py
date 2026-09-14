@@ -104,3 +104,11 @@ st.caption(
     "(SRTM DEM), rainfall (CHIRPS) and vegetation (Sentinel-2 NDVI) features. "
     "This is a susceptibility (static risk) tool, not a real-time early warning system."
 )
+st.markdown("---")
+st.info("ℹ️ **Project Information:** This AI-based system is designed to predict landslide susceptibility in Northeast India using environmental parameters. The model is trained and validated using the `ner_landslide_dataset.csv` dataset.")
+st.subheader("🛡️ Landslide Mitigation & Safety Guidelines")
+col_tip1, col_tip2 = st.columns(2)
+with col_tip1:
+    st.warning("🚨 **Early Warning Signs:**\n- New cracks appearing on buildings, roads, or retaining walls.\n- Tilting of trees, utility poles, or fences on slopes.\n- Sudden changes in creek water levels or muddy water flow.")
+with col_tip2:
+    st.error("🏃 **Emergency Actions:**\n1. Evacuate immediately if you hear rumbling sounds or suspect imminent danger.\n2. Stay informed via local authority alerts and weather updates.\n3. Avoid low-lying areas and steep slopes during heavy rainfall.")
