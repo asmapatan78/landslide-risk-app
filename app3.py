@@ -118,76 +118,119 @@ import pandas as pd
 import seaborn as sns
 import streamlit as st
 
-# ==========================================
-# STEP 1: Existing Input Controls & Layout
-# ==========================================
+# =========================================================
+# STEP 1: Input Logic with Clear/Delete Functionality
+# =========================================================
 st.title("🏔️ AI Landslide Risk Monitor – Northeast India")
 st.subheader("1. Choose a location preset or enter values manually")
 
+preset = st.selectbox("Preset location", ["Custom Values", "Gangtok, Sikkim"])
+
+if preset == "Gangtok, Sikkim":
+    default_elevation = 1600
+    default_slope = 22
+    default_aspect = 120
+    default_rainfall = 3500
+    default_ndvi = 0.50
+    default_land_cover = "Grassland"
+    is_disabled = True
+else:
+    default_elevation = 0
+    default_slope = 0
+    default_aspect = 0
+    default_rainfall = 0
+    default_ndvi = 0.0
+    default_land_cover = "Shrubland"
+    is_disabled = False
+
 col1, col2 = st.columns(2)
+
 with col1:
-    preset = st.selectbox(
-        "Preset location", ["Gangtok, Sikkim", "Custom Values"]
+    elevation = st.number_input(
+        "Elevation (m)",
+        value=None if default_elevation == 0 else default_elevation,
+        placeholder="Enter elevation...",
+        disabled=is_disabled,
     )
-    elevation = st.number_input("Elevation (m)", value=1600, step=50)
-    slope = st.slider("Slope (degrees)", min_value=0, max_value=90, value=45)
+    slope = st.slider(
+        "Slope (degrees)",
+        min_value=0,
+        max_value=90,
+        value=default_slope,
+        disabled=is_disabled,
+    )
     aspect = st.slider(
         "Aspect / slope direction (degrees, 0=N)",
         min_value=0,
         max_value=360,
-        value=200,
+        value=default_aspect,
+        disabled=is_disabled,
     )
 
 with col2:
-    rainfall = st.number_input("Annual rainfall (mm)", value=3500, step=100)
+    rainfall = st.number_input(
+        "Annual rainfall (mm)",
+        value=None if default_rainfall == 0 else default_rainfall,
+        placeholder="Enter rainfall...",
+        disabled=is_disabled,
+    )
     ndvi = st.slider(
-        "NDVI – vegetation greenness (-0.1 bare, 0.9 dense forest)",
+        "NDVI – vegetation greenness",
         min_value=-0.1,
         max_value=0.9,
-        value=0.45,
+        value=default_ndvi,
         step=0.01,
+        disabled=is_disabled,
     )
     land_cover = st.selectbox(
-        "Land cover class", ["Shrubland", "Forest", "Barren", "Grassland"]
+        "Land cover class",
+        ["Shrubland", "Forest", "Barren", "Grassland"],
+        index=["Shrubland", "Forest", "Barren", "Grassland"].index(
+            default_land_cover
+        ),
+        disabled=is_disabled,
     )
 
+if not is_disabled:
+    if st.button("🗑️ Clear All Custom Values"):
+        st.rerun()
 
-# ==========================================
-# STEP 2: Visualizations Section (Paste This Below Your Inputs)
-# ==========================================
+graph_elevation = elevation if elevation is not None else 0
+graph_rainfall = rainfall if rainfall is not None else 0
+
+# =========================================================
+# STEP 2: Visualizations Section
+# =========================================================
 st.markdown("---")
 st.subheader("📊 Current Location Feature Breakdown")
 
 col_graph1, col_graph2, col_graph3 = st.columns(3)
 
-# Graph 1: Elevation and Annual Rainfall
 with col_graph1:
     fig1, ax1 = plt.subplots(figsize=(4, 5))
     sns.barplot(
         x=["Elevation", "Rainfall"],
-        y=[elevation, rainfall],
+        y=[graph_elevation, graph_rainfall],
         palette="Reds_r",
         ax=ax1,
     )
     ax1.set_title("Elevation & Rainfall Scale", fontsize=10)
-    ax1.set_ylabel("Value")
     st.pyplot(fig1)
 
-# Graph 2: Terrain Angles (Slope & Aspect)
 with col_graph2:
     fig2, ax2 = plt.subplots(figsize=(4, 5))
     sns.barplot(
-        x=["Slope", "Aspect"], y=[slope, aspect], palette="Oranges_r", ax=ax2
+        x=["Slope", "Aspect"],
+        y=[slope, aspect],
+        palette="Oranges_r",
+        ax=ax2,
     )
     ax2.set_title("Angles & Slopes (Degrees)", fontsize=10)
-    ax2.set_ylabel("Degrees")
     st.pyplot(fig2)
 
-# Graph 3: Vegetation Density Index (NDVI)
 with col_graph3:
     fig3, ax3 = plt.subplots(figsize=(4, 5))
     sns.barplot(x=["NDVI (Greenness)"], y=[ndvi], palette="Greens_r", ax=ax3)
     ax3.set_title("Vegetation Index", fontsize=10)
     ax3.set_ylim(-0.1, 1.0)
-    ax3.set_ylabel("Index Score")
     st.pyplot(fig3)
