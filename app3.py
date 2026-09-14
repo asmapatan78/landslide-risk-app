@@ -112,3 +112,82 @@ with col_tip1:
     st.warning("🚨 **Early Warning Signs:**\n- New cracks appearing on buildings, roads, or retaining walls.\n- Tilting of trees, utility poles, or fences on slopes.\n- Sudden changes in creek water levels or muddy water flow.")
 with col_tip2:
     st.error("🏃 **Emergency Actions:**\n1. Evacuate immediately if you hear rumbling sounds or suspect imminent danger.\n2. Stay informed via local authority alerts and weather updates.\n3. Avoid low-lying areas and steep slopes during heavy rainfall.")
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import streamlit as st
+
+# ==========================================
+# STEP 1: Existing Input Controls & Layout
+# ==========================================
+st.title("🏔️ AI Landslide Risk Monitor – Northeast India")
+st.subheader("1. Choose a location preset or enter values manually")
+
+col1, col2 = st.columns(2)
+with col1:
+    preset = st.selectbox(
+        "Preset location", ["Gangtok, Sikkim", "Custom Values"]
+    )
+    elevation = st.number_input("Elevation (m)", value=1600, step=50)
+    slope = st.slider("Slope (degrees)", min_value=0, max_value=90, value=45)
+    aspect = st.slider(
+        "Aspect / slope direction (degrees, 0=N)",
+        min_value=0,
+        max_value=360,
+        value=200,
+    )
+
+with col2:
+    rainfall = st.number_input("Annual rainfall (mm)", value=3500, step=100)
+    ndvi = st.slider(
+        "NDVI – vegetation greenness (-0.1 bare, 0.9 dense forest)",
+        min_value=-0.1,
+        max_value=0.9,
+        value=0.45,
+        step=0.01,
+    )
+    land_cover = st.selectbox(
+        "Land cover class", ["Shrubland", "Forest", "Barren", "Grassland"]
+    )
+
+
+# ==========================================
+# STEP 2: Visualizations Section (Paste This Below Your Inputs)
+# ==========================================
+st.markdown("---")
+st.subheader("📊 Current Location Feature Breakdown")
+
+col_graph1, col_graph2, col_graph3 = st.columns(3)
+
+# Graph 1: Elevation and Annual Rainfall
+with col_graph1:
+    fig1, ax1 = plt.subplots(figsize=(4, 5))
+    sns.barplot(
+        x=["Elevation", "Rainfall"],
+        y=[elevation, rainfall],
+        palette="Reds_r",
+        ax=ax1,
+    )
+    ax1.set_title("Elevation & Rainfall Scale", fontsize=10)
+    ax1.set_ylabel("Value")
+    st.pyplot(fig1)
+
+# Graph 2: Terrain Angles (Slope & Aspect)
+with col_graph2:
+    fig2, ax2 = plt.subplots(figsize=(4, 5))
+    sns.barplot(
+        x=["Slope", "Aspect"], y=[slope, aspect], palette="Oranges_r", ax=ax2
+    )
+    ax2.set_title("Angles & Slopes (Degrees)", fontsize=10)
+    ax2.set_ylabel("Degrees")
+    st.pyplot(fig2)
+
+# Graph 3: Vegetation Density Index (NDVI)
+with col_graph3:
+    fig3, ax3 = plt.subplots(figsize=(4, 5))
+    sns.barplot(x=["NDVI (Greenness)"], y=[ndvi], palette="Greens_r", ax=ax3)
+    ax3.set_title("Vegetation Index", fontsize=10)
+    ax3.set_ylim(-0.1, 1.0)
+    ax3.set_ylabel("Index Score")
+    st.pyplot(fig3)
