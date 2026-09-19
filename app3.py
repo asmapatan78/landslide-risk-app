@@ -124,7 +124,7 @@ import streamlit as st
 st.title("🏔️ AI Landslide Risk Monitor – Northeast India")
 st.subheader("1. Choose a location preset or enter values manually")
 
-preset = st.selectbox("Preset location", ["Custom Values", "Gangtok, Sikkim"])
+preset = st.selectbox("Preset location", ["Custom Values", "Gangtok, Sikkim", "Guwahati, Assam", "Shillong, Meghalaya"])
 
 if preset == "Gangtok, Sikkim":
     default_elevation = 1600
@@ -134,6 +134,25 @@ if preset == "Gangtok, Sikkim":
     default_ndvi = 0.50
     default_land_cover = "Grassland"
     is_disabled = True
+
+elif preset == "Guwahati, Assam":
+    default_elevation = 55
+    default_slope = 5
+    default_aspect = 45
+    default_rainfall = 1700
+    default_ndvi = 0.40
+    default_land_cover = "Shrubland"
+    is_disabled = True
+
+elif preset == "Shillong, Meghalaya":
+    default_elevation = 1525
+    default_slope = 18
+    default_aspect = 90
+    default_rainfall = 2400
+    default_ndvi = 0.60
+    default_land_cover = "Forest"
+    is_disabled = True
+
 else:
     default_elevation = 0
     default_slope = 0
@@ -142,7 +161,6 @@ else:
     default_ndvi = 0.0
     default_land_cover = "Shrubland"
     is_disabled = False
-
 col1, col2 = st.columns(2)
 
 with col1:
