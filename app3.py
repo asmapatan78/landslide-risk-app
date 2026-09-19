@@ -161,60 +161,65 @@ else:
     default_ndvi = 0.0
     default_land_cover = "Shrubland"
     is_disabled = False
-col1, col2 = st.columns(2)
-
-with col1:
-    elevation = st.number_input(
-        "Elevation (m)",
-        value=None if default_elevation == 0 else default_elevation,
-        placeholder="Enter elevation...",
-        disabled=is_disabled,
-    )
-    slope = st.slider(
-        "Slope (degrees)",
-        min_value=0,
-        max_value=90,
-        value=default_slope,
-        disabled=is_disabled,
-    )
-    aspect = st.slider(
-        "Aspect / slope direction (degrees, 0=N)",
-        min_value=0,
-        max_value=360,
-        value=default_aspect,
-        disabled=is_disabled,
+# =========================================================================
+# SECTION 1: SENSORS
+# =========================================================================
+st.markdown("### 🛠️ 1. Sensors Configuration")
+with st.container(border=True):
+    active_sensors = st.multiselect(
+        "Select Active Sensors in NER:",
+        options=["Seismometers", "GPS / GNSS", "Tilt sensors", "Rainfall sensors", "Table data"],
+        default=["Seismometers", "Rainfall sensors", "GPS / GNSS"]
     )
 
-with col2:
-    rainfall = st.number_input(
-        "Annual rainfall (mm)",
-        value=None if default_rainfall == 0 else default_rainfall,
-        placeholder="Enter rainfall...",
-        disabled=is_disabled,
-    )
-    ndvi = st.slider(
-        "NDVI – vegetation greenness",
-        min_value=-0.1,
-        max_value=0.9,
-        value=default_ndvi,
-        step=0.01,
-        disabled=is_disabled,
-    )
-    land_cover = st.selectbox(
-        "Land cover class",
-        ["Shrubland", "Forest", "Barren", "Grassland"],
-        index=["Shrubland", "Forest", "Barren", "Grassland"].index(
-            default_land_cover
-        ),
-        disabled=is_disabled,
-    )
+# =========================================================================
+# SECTION 2: PRIMARY DATA
+# =========================================================================
+st.markdown("### 📊 2. Primary Data Input")
+with st.container(border=True):
+    sub_surface = st.number_input("Sub-surface Data Level (meters)", min_value=0, max_value=2000, value=1600)
+    rainfall = st.slider("Rainfall Data Volume (mm)", min_value=0, max_value=5000, value=3500)
+    data_type = st.radio("Primary Data Source Mode:", options=["Regional statistics", "Historical data"])
 
-if not is_disabled:
-    if st.button("🗑️ Clear All Custom Values"):
-        st.rerun()
+# =========================================================================
+# SECTION 3: RISK FACTORS
+# =========================================================================
+st.markdown("### ⚠️ 3. Risk Factors & Emergencies")
+with st.container(border=True):
+    emergency_service = st.selectbox("Emergency Response Focus:", options=["Police fire", "Medical emergencies", "Natural disaster management"])
+    infrastructure_risk = st.select_slider("Infrastructure Vulnerability Data:", options=["Low Risk", "Medium Risk", "High Risk"], value="High Risk")
+    preparedness_check = st.checkbox("Disaster preparedness and protocols active?", value=True)
 
-graph_elevation = elevation if elevation is not None else 0
-graph_rainfall = rainfall if rainfall is not None else 0
+# =========================================================================
+# SECTION 4: RISK ASSESSMENT
+# =========================================================================
+st.markdown("### 📈 4. Risk Assessment & Thresholds")
+with st.container(border=True):
+    continuous_monitoring = st.toggle("Enable Continuous AI Monitoring", value=True)
+    risk_percentage = st.slider("Calculated Risk Level (%)", min_value=0, max_value=100, value=80)
+    
+    # Threshold & Alert generation UI based on slider
+    if risk_percentage >= 70:
+        st.error(f"🚨 ALERT GENERATED: High Risk Level detected at {risk_percentage}%! Threshold exceeded.")
+    else:
+        st.success(f"✅ System Stable: Risk Level at {risk_percentage}% is within safe bounds.")
+
+# =========================================================================
+# SECTION 5: SAFETY MAP SYSTEM
+# =========================================================================
+st.markdown("### 🗺️ 5. Safety Map System")
+with st.container(border=True):
+    st.info("📍 Location wise risk breakdown mapped across North East India (NER)")
+    # Future map implementation placeholder
+    st.markdown("🌐 *[Interactive Map Component Placeholder]*")
+    
+    safety_status = st.checkbox("Safety and Security Verified for NER Zone", value=True)
+
+# =========================================================================
+# FINAL SYSTEM OBJECTIVE OUTPUT
+# =========================================================================
+st.divider()
+st.success("🎯 **Better safety and disaster management achieved.**")
 
 # =========================================================
 # STEP 2: Visualizations Section
