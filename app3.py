@@ -1,99 +1,85 @@
 import streamlit as st
 import time
 
-# Page configuration for a single centered column layout
-st.set_page_config(page_title="AI Risk Monitor - NER", layout="centered")
+# Page configuration for maximum width to fit all 5 columns side-by-side
+st.set_page_config(page_title="AI Risk Monitor - NER", layout="wide")
 
-# Main Dashboard Title
+# Main Title
 st.title("🌐 AI-Based Earthquaking and Landslide Risk Monitoring System in NER")
 st.caption("Environment Focus: Northeast India Regional Safety Dashboard")
 st.divider()
 
-# =========================================================================
-# 1. SENSORS SECTION
-# =========================================================================
-st.header("🛠️ 1. Sensors")
-with st.container(border=True):
-    st.write("Configure active tracking sensors:")
-    sensor_seismo = st.checkbox("Seismometers (Earthquake tracking)", value=True)
-    sensor_gps = st.checkbox("GPS / GNSS (Ground movement)", value=True)
-    sensor_tilt = st.checkbox("Tilt sensors (Slope instability)", value=False)
-    sensor_rain = st.checkbox("Rainfall sensors (Precipitation)", value=True)
-    sensor_table = st.checkbox("Table data feeds", value=False)
-
-st.write("")
+# Creating 5 parallel columns side-by-side for a true row layout
+c1, c2, c3, c4, c5 = st.columns(5)
 
 # =========================================================================
-# 2. PRIMARY DATA SECTION
+# COLUMN 1: SENSORS
 # =========================================================================
-st.header("📊 2. Primary Data")
-with st.container(border=True):
-    ner_locations = [
-        "Gangtok, Sikkim", "Guwahati, Assam", "Shillong, Meghalaya", 
-        "Imphal, Manipur", "Aizawl, Mizoram", "Kohima, Nagaland"
-    ]
-    selected_loc = st.selectbox("Target NER Location:", options=ner_locations, index=0)
-    sub_surface = st.slider("Sub-surface Data Level (meters)", min_value=100, max_value=3000, value=1600)
-    rainfall_volume = st.slider("Rainfall Data (mm)", min_value=0, max_value=5000, value=3500)
-    data_mode = st.radio("Data Mode Selection:", options=["Regional statistics", "Historical data"])
-
-st.write("")
+with c1:
+    st.subheader("🛠️ 1. Sensors")
+    with st.container(border=True):
+        sensor_seismo = st.checkbox("Seismometers", value=True)
+        sensor_gps = st.checkbox("GPS / GNSS", value=True)
+        sensor_tilt = st.checkbox("Tilt sensors", value=False)
+        sensor_rain = st.checkbox("Rainfall sensors", value=True)
+        sensor_table = st.checkbox("Table data", value=False)
 
 # =========================================================================
-# 3. RISK FACTORS SECTION
+# COLUMN 2: PRIMARY DATA
 # =========================================================================
-st.header("⚠️ 3. Risk Factors")
-with st.container(border=True):
-    emergency_focus = st.selectbox(
-        "Emergency Services Readiness:", 
-        options=["Police fire", "Medical emergencies", "Natural disaster management"]
-    )
-    infrastructure_risk = st.select_slider(
-        "Infrastructure Vulnerability Level:", 
-        options=["Low Risk", "Medium Risk", "High Risk"], 
-        value="High Risk"
-    )
-    preparedness = st.checkbox("Disaster preparedness protocols deployed?", value=True)
-
-st.write("")
+with c2:
+    st.subheader("📊 2. Primary Data")
+    with st.container(border=True):
+        ner_locations = ["Gangtok, Sikkim", "Guwahati, Assam", "Shillong, Meghalaya", "Imphal, Manipur", "Aizawl, Mizoram", "Kohima, Nagaland"]
+        selected_loc = st.selectbox("Target NER:", options=ner_locations, index=0)
+        sub_surface = st.slider("Sub-surface (m)", min_value=100, max_value=3000, value=1600)
+        rainfall_volume = st.slider("Rainfall (mm)", min_value=0, max_value=5000, value=3500)
+        data_mode = st.radio("Data Mode:", options=["Regional", "Historical"])
 
 # =========================================================================
-# 4. RISK ASSESSMENT SECTION
+# COLUMN 3: RISK FACTORS
 # =========================================================================
-st.header("📈 4. Risk Assessment")
-with st.container(border=True):
-    st.write("**Continuous Monitoring System Active**")
-    
-    calculated_risk = 50
-    if rainfall_volume > 3000 or infrastructure_risk == "High Risk":
-        calculated_risk = 85
-    if sensor_seismo and rainfall_volume > 4000:
-        calculated_risk = 92
+with c3:
+    st.subheader("⚠️ 3. Risk Factors")
+    with st.container(border=True):
+        emergency_focus = st.selectbox("Emergency:", options=["Police fire", "Medical", "Disaster Mgmt"])
+        infrastructure_risk = st.select_slider("Vulnerability:", options=["Low", "Medium", "High"], value="High")
+        preparedness = st.checkbox("Ready?", value=True)
+
+# =========================================================================
+# COLUMN 4: RISK ASSESSMENT
+# =========================================================================
+with c4:
+    st.subheader("📈 4. Risk Assessment")
+    with st.container(border=True):
+        calculated_risk = 50
+        if rainfall_volume > 3000 or infrastructure_risk == "High":
+            calculated_risk = 85
+        if sensor_seismo and rainfall_volume > 4000:
+            calculated_risk = 92
+            
+        st.metric(label="Risk Level", value=f"{calculated_risk}%")
         
-    st.metric(label="Calculated Risk Level (%)", value=f"{calculated_risk}%")
-    
-    if calculated_risk >= 70:
-        st.error(f"🚨 ALERT GENERATED: High Risk detected at {calculated_risk}%! Threshold exceeded for {selected_loc}.")
-    else:
-        st.success(f"✅ System Stable: Risk Level is at {calculated_risk}% (Within safe bounds).")
-
-st.write("")
+        if calculated_risk >= 70:
+            st.error("🚨 ALERT")
+        else:
+            st.success("✅ Stable")
 
 # =========================================================================
-# 5. SAFETY MAP SYSTEM SECTION
+# COLUMN 5: SAFETY MAP SYSTEM
 # =========================================================================
-st.header("🗺️ 5. Safety Map System")
-with st.container(border=True):
-    st.info(f"📍 Mapped across North East India for: {selected_loc}")
-    st.markdown("### 🌐 Map of NER Placeholder")
-    st.caption("Visualizing telemetry from active sensors.")
-    safety_check = st.checkbox("Safety and Security Verified for NER", value=True)
+with c5:
+    st.subheader("🗺️ 5. Safety Map")
+    with st.container(border=True):
+        st.caption(f"Mapped for: {selected_loc}")
+        st.markdown("🌐 *[Map Placeholder]*")
+        safety_check = st.checkbox("Verified", value=True)
 
 # =========================================================================
-# FINAL SYSTEM OBJECTIVE
+# BOTTOM PROCESS BUTTON
 # =========================================================================
 st.divider()
 if st.button("🚀 Process System Integrity"):
-    with st.spinner("Analyzing telemetry..."):
+    with st.spinner("Analyzing..."):
         time.sleep(1)
-    st.success("🎯 **Better safety and disaster management achieved!**")
+    st.success("🎯 Better safety achieved!")
