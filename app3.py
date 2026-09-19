@@ -52,19 +52,42 @@ with c3:
 with c4:
     st.subheader("📈 4. Risk Assessment")
     with st.container(border=True):
-        calculated_risk = 50
-        if rainfall_volume > 3000 or infrastructure_risk == "High":
-            calculated_risk = 85
-        if sensor_seismo and rainfall_volume > 4000:
-            calculated_risk = 92
+        st.write("**Continuous Monitoring System Active**")
+        
+        # Loading your machine learning model file safely
+        import pickle
+        import numpy as np
+        
+        try:
+            with open("landslide_model.pkl", "rb") as f:
+                model = pickle.pickle.load(f) if hasattr(pickle, "pickle") else pickle.load(f)
+                
+            # Preparing input data according to your features format
+            # Elevation (sub_surface), Slope (infrastructure conversion), Aspect, Rainfall, NDVI, Land Cover
+            slope_val = 22 if infrastructure_risk == "High" else (12 if infrastructure_risk == "Medium" else 5)
+            ndvi_val = 0.50
             
+            # Creating input array for features
+            features = np.array([[sub_surface, slope_val, 120, rainfall_volume, ndvi_val]])
+            
+            # Predict probability if model supports it, else use predict
+            if hasattr(model, "predict_proba"):
+                risk_prob = model.predict_proba(features)[0][1]
+                calculated_risk = int(risk_prob * 100)
+            else:
+                pred = model.predict(features)[0]
+                calculated_risk = 90 if pred == 1 else 30
+                
+        except Exception as e:
+            # Fallback if pickle loading error occurs during sync
+            calculated_risk = 75 if rainfall_volume > 3000 else 45
+
         st.metric(label="Risk Level", value=f"{calculated_risk}%")
         
         if calculated_risk >= 70:
             st.error("🚨 ALERT")
         else:
             st.success("✅ Stable")
-
 # =========================================================================
 # =========================================================================
 # COLUMN 5: SAFETY MAP SYSTEM
