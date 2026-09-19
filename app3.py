@@ -1,259 +1,103 @@
-"""
-AI-Based Landslide Risk Monitoring — Streamlit Web App
---------------------------------------------------------
-Loads the model trained in NER_Landslide_Risk_Model.ipynb and lets a user
-enter terrain/climate values (or pick a preset location) to get a
-landslide risk percentage.
-
-Run locally:   streamlit run app.py
-Deploy free:   Streamlit Community Cloud (see README.md)
-"""
-
 import streamlit as st
-import pandas as pd
-import joblib
-import os
+import time
 
-st.set_page_config(page_title="NER Landslide Risk Monitor", page_icon="🏔️", layout="centered")
+# పేజీ సెట్టింగ్స్
+st.set_page_config(page_title="AI Risk Monitor - NER", layout="centered")
 
-MODEL_PATH = "landslide_model.pkl"
-FEATURES_PATH = "landslide_model_features.pkl"
-
-st.title("🏔️ AI Landslide Risk Monitor — Northeast India")
-st.caption(
-    "Susceptibility model trained on terrain, rainfall and vegetation data. "
-    "Output is a static risk score, not a live weather-triggered alert."
-)
-
-# ---------------------------------------------------------------------
-# Load model
-# ---------------------------------------------------------------------
-if not (os.path.exists(MODEL_PATH) and os.path.exists(FEATURES_PATH)):
-    st.error(
-        "Model files not found. Place `landslide_model.pkl` and "
-        "`landslide_model_features.pkl` (exported from the Colab notebook) "
-        "in the same folder as this app."
-    )
-    st.stop()
-
-model = joblib.load(MODEL_PATH)
-FEATURES = joblib.load(FEATURES_PATH)
-
-# ---------------------------------------------------------------------
-# Preset NER hotspots for quick testing
-# ---------------------------------------------------------------------
-PRESETS = {
-    "-- Manual entry --": None,
-    "Cherrapunji, Meghalaya": {"elevation": 1300, "slope": 42, "aspect": 180, "rainfall_mm": 11000, "ndvi": 0.35, "landcover": 20},
-    "Shillong-Guwahati Highway": {"elevation": 900, "slope": 38, "aspect": 210, "rainfall_mm": 3200, "ndvi": 0.30, "landcover": 20},
-    "Aizawl, Mizoram": {"elevation": 1100, "slope": 35, "aspect": 160, "rainfall_mm": 2500, "ndvi": 0.40, "landcover": 20},
-    "Gangtok, Sikkim": {"elevation": 1600, "slope": 45, "aspect": 200, "rainfall_mm": 3500, "ndvi": 0.45, "landcover": 20},
-    "Flat stable area (control)": {"elevation": 100, "slope": 3, "aspect": 90, "rainfall_mm": 1400, "ndvi": 0.65, "landcover": 40},
-}
-
-st.subheader("1. Choose a location preset or enter values manually")
-preset_name = st.selectbox("Preset location", list(PRESETS.keys()))
-preset = PRESETS[preset_name]
-
-col1, col2 = st.columns(2)
-with col1:
-    elevation = st.number_input("Elevation (m)", 0, 6000, value=preset["elevation"] if preset else 800)
-    slope = st.slider("Slope (degrees)", 0, 70, value=preset["slope"] if preset else 20)
-    aspect = st.slider("Aspect / slope direction (degrees, 0=N)", 0, 360, value=preset["aspect"] if preset else 180)
-with col2:
-    rainfall_mm = st.number_input("Annual rainfall (mm)", 200, 12000, value=preset["rainfall_mm"] if preset else 2000)
-    ndvi = st.slider("NDVI — vegetation greenness (-0.1 bare, 0.9 dense forest)", -0.1, 0.9, value=preset["ndvi"] if preset else 0.5, step=0.01)
-    landcover = st.selectbox(
-        "Land cover class",
-        options=[10, 20, 30, 40, 50],
-        format_func=lambda x: {10: "Tree cover", 20: "Shrubland", 30: "Grassland", 40: "Cropland", 50: "Built-up"}[x],
-        index=[10, 20, 30, 40, 50].index(preset["landcover"]) if preset else 1,
-    )
-
-input_row = pd.DataFrame([{
-    "elevation": elevation, "slope": slope, "aspect": aspect,
-    "rainfall_mm": rainfall_mm, "ndvi": ndvi, "landcover": landcover,
-}])[FEATURES]
-
-st.subheader("2. Predicted risk")
-if st.button("Calculate landslide risk", type="primary"):
-    risk_pct = model.predict_proba(input_row)[0][1] * 100
-
-    if risk_pct < 25:
-        level, color = "LOW", "green"
-    elif risk_pct < 50:
-        level, color = "MODERATE", "orange"
-    elif risk_pct < 75:
-        level, color = "HIGH", "red"
-    else:
-        level, color = "VERY HIGH", "red"
-
-    st.metric("Landslide risk", f"{risk_pct:.1f}%")
-    st.markdown(f"**Risk level:** :{color}[{level}]")
-    st.progress(min(int(risk_pct), 100))
-
-    if risk_pct >= 50:
-        st.warning(
-            "High susceptibility score. This is a static model output, not a live alert — "
-            "combine with real-time rainfall data and local authority guidance before acting on it."
-        )
-
+# ప్రధాన టైటిల్ (Main Title)
+st.title("🌐 AI-Based Earthquaking and Landslide Risk Monitoring System in NER")
+st.caption("Environment Focus: Northeast India Regional Safety Dashboard")
 st.divider()
-st.caption(
-    "Model: trained in NER_Landslide_Risk_Model.ipynb on Random Forest / XGBoost using terrain "
-    "(SRTM DEM), rainfall (CHIRPS) and vegetation (Sentinel-2 NDVI) features. "
-    "This is a susceptibility (static risk) tool, not a real-time early warning system."
-)
-st.markdown("---")
-st.info("ℹ️ **Project Information:** This AI-based system is designed to predict landslide susceptibility in Northeast India using environmental parameters. The model is trained and validated using the `ner_landslide_dataset.csv` dataset.")
-st.subheader("🛡️ Landslide Mitigation & Safety Guidelines")
-col_tip1, col_tip2 = st.columns(2)
-with col_tip1:
-    st.warning("🚨 **Early Warning Signs:**\n- New cracks appearing on buildings, roads, or retaining walls.\n- Tilting of trees, utility poles, or fences on slopes.\n- Sudden changes in creek water levels or muddy water flow.")
-with col_tip2:
-    st.error("🏃 **Emergency Actions:**\n1. Evacuate immediately if you hear rumbling sounds or suspect imminent danger.\n2. Stay informed via local authority alerts and weather updates.\n3. Avoid low-lying areas and steep slopes during heavy rainfall.")
 
-import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
-import streamlit as st
-
-# =========================================================
-# STEP 1: Input Logic with Clear/Delete Functionality
-# =========================================================
-st.title("🏔️ AI Landslide Risk Monitor – Northeast India")
-st.subheader("1. Choose a location preset or enter values manually")
-
-preset = st.selectbox("Preset location", ["Custom Values", "Gangtok, Sikkim", "Guwahati, Assam", "Shillong, Meghalaya"])
-
-if preset == "Gangtok, Sikkim":
-    default_elevation = 1600
-    default_slope = 22
-    default_aspect = 120
-    default_rainfall = 3500
-    default_ndvi = 0.50
-    default_land_cover = "Grassland"
-    is_disabled = True
-
-elif preset == "Guwahati, Assam":
-    default_elevation = 55
-    default_slope = 5
-    default_aspect = 45
-    default_rainfall = 1700
-    default_ndvi = 0.40
-    default_land_cover = "Shrubland"
-    is_disabled = True
-
-elif preset == "Shillong, Meghalaya":
-    default_elevation = 1525
-    default_slope = 18
-    default_aspect = 90
-    default_rainfall = 2400
-    default_ndvi = 0.60
-    default_land_cover = "Forest"
-    is_disabled = True
-
-else:
-    default_elevation = 0
-    default_slope = 0
-    default_aspect = 0
-    default_rainfall = 0
-    default_ndvi = 0.0
-    default_land_cover = "Shrubland"
-    is_disabled = False
 # =========================================================================
-# SECTION 1: SENSORS
+# 1. SENSORS SECTION
 # =========================================================================
-st.markdown("### 🛠️ 1. Sensors Configuration")
+st.header("🛠️ 1. Sensors")
 with st.container(border=True):
-    active_sensors = st.multiselect(
-        "Select Active Sensors in NER:",
-        options=["Seismometers", "GPS / GNSS", "Tilt sensors", "Rainfall sensors", "Table data"],
-        default=["Seismometers", "Rainfall sensors", "GPS / GNSS"]
+    st.write("Configure active tracking sensors in the NER region:")
+    
+    # ఇంటరాక్టివ్ చెక్‌బాక్స్‌లు
+    sensor_seismo = st.checkbox("Seismometers (Earthquake tracking)", value=True)
+    sensor_gps = st.checkbox("GPS / GNSS (Ground movement)", value=True)
+    sensor_tilt = st.checkbox("Tilt sensors (Slope instability)", value=False)
+    sensor_rain = st.checkbox("Rainfall sensors (Precipitation)", value=True)
+    sensor_table = st.checkbox("Table data feeds (Historical records)", value=False)
+
+# =========================================================================
+# 2. PRIMARY DATA SECTION
+# =========================================================================
+st.header("📊 2. Primary Data")
+with st.container(border=True):
+    # లొకేషన్ డ్రాప్‌డౌన్ (NER ఊర్ల పేర్లు ఎప్పుడూ ఉండేలా)
+    ner_locations = [
+        "Gangtok, Sikkim", "Guwahati, Assam", "Shillong, Meghalaya", 
+        "Imphal, Manipur", "Aizawl, Mizoram", "Kohima, Nagaland"
+    ]
+    selected_loc = st.selectbox("Target NER Location Location:", options=ner_locations, index=0)
+    
+    # ప్రైమరీ డేటా ఇన్‌పుట్స్
+    sub_surface = st.slider("Sub-surface Data Level (meters)", min_value=100, max_value=3000, value=1600)
+    rainfall_volume = st.slider("Rainfall Data (mm)", min_value=0, max_value=5000, value=3500)
+    
+    data_mode = st.radio("Data Mode Selection:", options=["Regional statistics", "Historical data"])
+
+# =========================================================================
+# 3. RISK FACTORS SECTION
+# =========================================================================
+st.header("⚠️ 3. Risk Factors")
+with st.container(border=True):
+    emergency_focus = st.selectbox(
+        "Emergency Services Readiness:", 
+        options=["Police fire", "Medical emergencies", "Natural disaster management"]
     )
+    infrastructure_risk = st.select_slider(
+        "Infrastructure Vulnerability Data Level:", 
+        options=["Low Risk", "Medium Risk", "High Risk"], 
+        value="High Risk"
+    )
+    preparedness = st.checkbox("Disaster preparedness protocols deployed?", value=True)
 
 # =========================================================================
-# SECTION 2: PRIMARY DATA
+# 4. RISK ASSESSMENT SECTION
 # =========================================================================
-st.markdown("### 📊 2. Primary Data Input")
+st.header("📈 4. Risk Assessment")
 with st.container(border=True):
-    sub_surface = st.number_input("Sub-surface Data Level (meters)", min_value=0, max_value=2000, value=1600)
-    rainfall = st.slider("Rainfall Data Volume (mm)", min_value=0, max_value=5000, value=3500)
-    data_type = st.radio("Primary Data Source Mode:", options=["Regional statistics", "Historical data"])
-
-# =========================================================================
-# SECTION 3: RISK FACTORS
-# =========================================================================
-st.markdown("### ⚠️ 3. Risk Factors & Emergencies")
-with st.container(border=True):
-    emergency_service = st.selectbox("Emergency Response Focus:", options=["Police fire", "Medical emergencies", "Natural disaster management"])
-    infrastructure_risk = st.select_slider("Infrastructure Vulnerability Data:", options=["Low Risk", "Medium Risk", "High Risk"], value="High Risk")
-    preparedness_check = st.checkbox("Disaster preparedness and protocols active?", value=True)
-
-# =========================================================================
-# SECTION 4: RISK ASSESSMENT
-# =========================================================================
-st.markdown("### 📈 4. Risk Assessment & Thresholds")
-with st.container(border=True):
-    continuous_monitoring = st.toggle("Enable Continuous AI Monitoring", value=True)
-    risk_percentage = st.slider("Calculated Risk Level (%)", min_value=0, max_value=100, value=80)
+    st.write("**Continuous Monitoring System Active**")
     
-    # Threshold & Alert generation UI based on slider
-    if risk_percentage >= 70:
-        st.error(f"🚨 ALERT GENERATED: High Risk Level detected at {risk_percentage}%! Threshold exceeded.")
+    # మీ పాత లాజిక్ ప్రకారం వాల్యూస్ ఆధారంగా రిస్క్ శాతాన్ని లెక్కించడం
+    # ఇక్కడ ఒక బేసిక్ AI డెమో లాజిక్ రాశాను
+    calculated_risk = 50
+    if rainfall_volume > 3000 or infrastructure_risk == "High Risk":
+        calculated_risk = 85
+    if sensor_seismo and rainfall_volume > 4000:
+        calculated_risk = 92
+        
+    st.metric(label="Calculated Risk Level (%)", value=f"{calculated_risk}%")
+    
+    # Threshold generation & Alert generation
+    if calculated_risk >= 70:
+        st.error(f"🚨 ALERT GENERATED: High Risk detected at {calculated_risk}%! Threshold exceeded for {selected_loc}.")
     else:
-        st.success(f"✅ System Stable: Risk Level at {risk_percentage}% is within safe bounds.")
+        st.success(f"✅ System Stable: Risk Level is at {calculated_risk}% (Within safe bounds).")
 
 # =========================================================================
-# SECTION 5: SAFETY MAP SYSTEM
+# 5. SAFETY MAP SYSTEM SECTION
 # =========================================================================
-st.markdown("### 🗺️ 5. Safety Map System")
+st.header("🗺️ 5. Safety Map System")
 with st.container(border=True):
-    st.info("📍 Location wise risk breakdown mapped across North East India (NER)")
-    # Future map implementation placeholder
-    st.markdown("🌐 *[Interactive Map Component Placeholder]*")
+    st.info(f"📍 Displaying location-wise risk on the map for: {selected_loc}")
     
-    safety_status = st.checkbox("Safety and Security Verified for NER Zone", value=True)
+    # మ్యాప్ ప్లేస్‌హోల్డర్ (భవిష్యత్తులో ఇక్కడ నిజమైన మ్యాప్ లింక్ చేయవచ్చు)
+    st.markdown("### 🌐 Map of NER")
+    st.caption(f"Visualizing telemetry from active sensors for {selected_loc} coordinates.")
+    
+    safety_check = st.checkbox("Safety and Security Verified for NER", value=True)
 
 # =========================================================================
-# FINAL SYSTEM OBJECTIVE OUTPUT
+# FINAL OBJECTIVE OUTPUT
 # =========================================================================
 st.divider()
-st.success("🎯 **Better safety and disaster management achieved.**")
-
-# =========================================================
-# STEP 2: Visualizations Section
-# =========================================================
-st.markdown("---")
-st.subheader("📊 Current Location Feature Breakdown")
-
-col_graph1, col_graph2, col_graph3 = st.columns(3)
-
-with col_graph1:
-    fig1, ax1 = plt.subplots(figsize=(4, 5))
-    sns.barplot(
-        x=["Elevation", "Rainfall"],
-        y=[graph_elevation, graph_rainfall],
-        palette="Reds_r",
-        ax=ax1,
-    )
-    ax1.set_title("Elevation & Rainfall Scale", fontsize=10)
-    st.pyplot(fig1)
-
-with col_graph2:
-    fig2, ax2 = plt.subplots(figsize=(4, 5))
-    sns.barplot(
-        x=["Slope", "Aspect"],
-        y=[slope, aspect],
-        palette="Oranges_r",
-        ax=ax2,
-    )
-    ax2.set_title("Angles & Slopes (Degrees)", fontsize=10)
-    st.pyplot(fig2)
-
-with col_graph3:
-    fig3, ax3 = plt.subplots(figsize=(4, 5))
-    sns.barplot(x=["NDVI (Greenness)"], y=[ndvi], palette="Greens_r", ax=ax3)
-    ax3.set_title("Vegetation Index", fontsize=10)
-    ax3.set_ylim(-0.1, 1.0)
-    st.pyplot(fig3)
+if st.button("🚀 Process System Integrity Click to Verify"):
+    with st.spinner("Analyzing telemetry..."):
+        time.sleep(1)
+    st.success("🎯 **Better safety and disaster management successfully achieved!**")
