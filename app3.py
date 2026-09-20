@@ -57,9 +57,14 @@ with c4:
         
         import pickle
         import numpy as np
-        
-        with open("landslide_model.pkl", "rb") as f:
-            model = pickle.load(f)
+        # Try loading model, if it fails it won't crash the app
+    # Try loading model safely
+        model = None
+        try:
+            with open("landslide_model.pkl", "rb") as f:
+                model = pickle.load(f)
+        except Exception as e:
+            pass
             
         slope_val = 22
         ndvi_val = 0.50
