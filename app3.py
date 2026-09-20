@@ -109,32 +109,41 @@ import smtplib
 from email.mime.text import MIMEText
 
 def send_automated_alerts(risk_val, location, rainfall_val):
+    # 1. REAL SMS ALERT (Twilio)
     try:
-        sender_email = "your_email@gmail.com"
-        sender_password = "your_app_password"
-        receiver_email = "authority@gmail.com"
+        from twilio.rest import Client
+        account_sid = 'AC6344c392e383b1951a8941920a1ef0af'
+        auth_token = '43553a1d8124c880ee7aa1630132df9e'
+        client = Client(account_sid, auth_token)
         
-        msg = MIMEText(f"CRITICAL LANDSLIDE WARNING!\nLocation: {location}\nRisk Level: {risk_val}%\nRainfall: {rainfall_val} mm\nTake immediate safety measures.")
-        msg['Subject'] = f"🚨 ALERT: High Landslide Risk in {location}"
-        msg['From'] = sender_email
-        msg['To'] = receiver_email
-        
-        with smtplib.SMTP_SSL('://gmail.com', 465) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, receiver_email, msg.as_string())
-    except:
+        message_sms = client.messages.create(
+            from_='+17372508034',
+            body=f"🚨 SMS ALERT: High Landslide Risk ({risk_val}%) detected in {location} due to {rainfall_val}mm rainfall!",
+            to='+919491850877'
+        )
+    except Exception as e:
+        pass
+
+    # 2. REAL WHATSAPP ALERT (Twilio WhatsApp Sandbox)
+    try:
+        message_wa = client.messages.create(
+            from_='whatsapp:+17372508034',
+            body=f"🚨 *LANDSLIDE ALERT* 🚨\n\n*Location:* {location}\n*Risk Level:* {risk_val}%\n*Rainfall:* {rainfall_val} mm\n\nStatus: Critical condition active! Take immediate safety measures.",
+            to='whatsapp:+919491850877'
+        )
+    except Exception as e:
         pass
 
     try:
         from twilio.rest import Client
-        account_sid = 'YOUR_TWILIO_ACCOUNT_SID'
-        auth_token = 'YOUR_TWILIO_AUTH_TOKEN'
+        account_sid = 'AC6344c392e383b1951a8941920a1ef0af'
+        auth_token = '4353a1d8124c880ee7a4f0cee65db26a'
         client = Client(account_sid, auth_token)
         
         message = client.messages.create(
-            from_='+1234567890',
+            from_='+17372508034',
             body=f"🚨 ALERT: High Landslide Risk ({risk_val}%) detected in {location} due to {rainfall_val}mm rainfall.",
-            to='+919999999999'
+            to='+919491850877'
         )
     except:
         pass
