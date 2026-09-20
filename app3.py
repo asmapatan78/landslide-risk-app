@@ -51,85 +51,103 @@ with c3:
 # COLUMN 4: RISK ASSESSMENT
 # =========================================================================
 with c4:
-    st.subheader("📉 4. Risk Assessment")
-    with st.container(border=True):
-        st.write("**Continuous Monitoring System Active**")
-        
-        import pickle
-        import numpy as np
-        # Try loading model, if it fails it won't crash the app
-    # Try loading model safely
-        model = None
-        try:
-            with open("landslide_model.pkl", "rb") as f:
-                model = pickle.load(f)
-        except Exception as e:
-            pass
+        st.subheader("📉 4. Risk Assessment")
+        with st.container(border=True):
+            st.write("**Continuous Monitoring System Active**")
             
-        slope_val = 22
-        ndvi_val = 0.50
-        c4_live_placeholder = st.empty()
+            import joblib
+            import numpy as np
+            import pandas as pd
+            
+            MODEL_PATH = "landslide_model.pkl"
+            FEATURES_PATH = "landslide_model_features.pkl"
+            
+            model = None
+            FEATURES = None
+            
+            try:
+                if os.path.exists(MODEL_PATH) and os.path.exists(FEATURES_PATH):
+                    model = joblib.load(MODEL_PATH)
+                    FEATURES = joblib.load(FEATURES_PATH)
+            except Exception as e:
+                pass
+                
+            c4_live_placeholder = st.empty()
+
+# =====================================
 # COLUMN 5: SAFETY MAP SYSTEM
-# =========================================================================
+# =====================================
 with c5:
     st.subheader("🗺️ 5. Safety Map")
     with st.container(border=True):
         st.caption(f"Mapped for: {selected_loc}")
-        
-        # Mapping coordinates logic based on selected city
-        import pandas as pd
-        coords = {"lat": [27.3314], "lon": [88.6138]} # Default Gangtok
-        if selected_loc == "Guwahati, Assam":
-            coords = {"lat": [26.1445], "lon": [91.7362]}
-        elif selected_loc == "Shillong, Meghalaya":
-            coords = {"lat": [25.5788], "lon": [91.8833]}
-        elif selected_loc == "Imphal, Manipur":
-            coords = {"lat": [24.8170], "lon": [93.9368]}
-        elif selected_loc == "Aizawl, Mizoram":
-            coords = {"lat": [23.7271], "lon": [92.7176]}
-        elif selected_loc == "Kohima, Nagaland":
-            coords = {"lat": [25.6751], "lon": [94.1086]}
-            
-        # Displaying real interactive map
-        st.map(pd.DataFrame(coords), zoom=9)
-        safety_check = st.checkbox("Verified", value=True)
-# =========================================================================
-# BOTTOM PROCESS BUTTON
-# =========================================================================
+
 st.divider()
-if st.button("🚀 Process System Integrity"):
-    with st.spinner("Analyzing..."):
-        time.sleep(1)
-    st.success("🎯 Better safety achieved!")
+
+if "rainfall_history" not in st.session_state:
+    st.session_state.rainfall_history = []
+
+# ---------------------------------------------------------------------
+# LIVE DATA & MODE CONTROL LOOP
+# ---------------------------------------------------------------------
 while True:
     import random
-    import numpy as np
-
-    live_sub_surface = random.randint(500, 3000)
-    live_rainfall = random.randint(0, 5000)
-
-    # COLUMN 2 లైవ్ డేటా అప్‌డేట్
-    with c2_live_placeholder.container():
-        st.metric(label="Sub-surface (m)", value=f"{live_sub_surface} m")
-        st.metric(label="Rainfall (mm)", value=f"{live_rainfall} mm")
+    
+    if data_mode == "Regional":
+        live_elevation = 1600 if "Gangtok" in selected_loc else 1100
+        live_slope = 45 if "Gangtok" in selected_loc else 35
+        live_aspect = 200
+        live_rainfall = random.randint(1500, 4500)
+        live_ndvi = round(random.uniform(0.3, 0.6), 2)
+        live_landcover = 20
         
-    # COLUMN 4 లైవ్ రిస్క్ అప్‌డేట్
-    with c4_live_placeholder.container():
-        try:
-            live_features = np.array([[live_sub_surface, 120, live_rainfall, 0.5]])
-            if hasattr(model, "predict_proba"):
-                risk_prob = model.predict_proba(live_features)
-                calculated_risk = int(risk_prob * 100)
-            else:
-                pred = model.predict(live_features)
-                calculated_risk = 90 if pred == 1 else 30
-        except:
-            calculated_risk = 75 if live_rainfall > 3000 else 45
-        
-        st.metric(label="Risk Level", value=f"{calculated_risk}%")
-        if calculated_risk >= 70:
-            st.error("🚨 ALERT")
-        else:
-            st.success("✅ Stable")
+        st.session_state.rainfall_history.append(live_rainfall)
+        if len(st.session_state.rainfall_history) > 15:
+            st.session_state.rainfall_history.pop(0)
             
-    time.sleep(3)
+        with c2_live_placeholder.container():
+            st.metric(label="Sub-surface (m)", value=f"{1577} m")
+            st.metric(label="Rainfall (mm)", value=f"{live_rainfall} mm")
+            
+            st.caption("📈 Live Rainfall Trend (mm)")
+            st.line_chart(st.session_state.rainfall_history, height=130)
+            
+        with c4_live_placeholder.container():
+            calculated_risk = 0
+            if model is not None and FEATURES is not None:
+                try:
+                    input_row = pd.DataFrame([{
+                        "elevation": live_elevation, "slope": live_slope, "aspect": live_aspect,
+                        "rainfall_mm": live_rainfall, "ndvi": live_ndvi, "landcover": live_landcover
+                    }])[FEATURES]
+                    
+                    risk_pct = model.predict_proba(input_row)[0][1] * 100
+                    calculated_risk = int(risk_pct)
+                except:
+                    calculated_risk = 80 if live_rainfall > 3200 else 45
+            else:
+                calculated_risk = 80 if live_rainfall > 3200 else 45
+                
+            st.metric(label="Risk Level", value=f"{calculated_risk}%")
+            if calculated_risk >= 70:
+                st.error("🚨 ALERT: High Risk!")
+            else:
+                st.success("✅ Stable")
+                
+        time.sleep(3)
+
+    elif data_mode == "Historical":
+        with c2_live_placeholder.container():
+            st.info("📅 Historical Mode Active")
+            selected_date = st.date_input("Select Past Date:", value=None)
+            
+            st.caption("📊 Historical Monthly Average Risk")
+            hist_data = pd.DataFrame({"Risk %": [20, 25, 40, 75, 85, 60, 30]}, 
+                                     index=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"])
+            st.bar_chart(hist_data, height=130)
+            
+        with c4_live_placeholder.container():
+            st.metric(label="Selected Date Risk", value="N/A")
+            st.warning("Please choose a date from Column 2 to load offline records.")
+            
+        st.stop()
