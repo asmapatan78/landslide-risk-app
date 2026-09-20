@@ -172,7 +172,7 @@ while True:
             st.line_chart(st.session_state.rainfall_history, height=130)
             
         with c4_live_placeholder.container():
-            calculated_risk = 45 # డిఫాల్ట్ బేస్లైన్ రిస్క్
+            calculated_risk = 45
             
             if model is not None and FEATURES is not None:
                 try:
@@ -190,7 +190,6 @@ while True:
                 
             st.metric(label="Risk Level", value=f"{calculated_risk}%")
             
-            # రిస్క్ మరియు అలర్ట్ మెసేజ్ ఒకదానికొకటి సింక్ అవ్వడానికి కండిషన్
             if calculated_risk >= 70:
                 st.error("🚨 CRITICAL ALERT: High Landslide Susceptibility!")
                 if not alert_sent:
@@ -201,8 +200,9 @@ while True:
                 st.success("✅ Stable Condition")
                 alert_sent = False
                 
-        time.sleep(3)
-elif data_mode == "Historical":
+        time.sleep(3)  # ఇది ఇప్పుడు కరెక్ట్‌గా Regional ఇఫ్ బ్లాక్ లోపల ఉంది
+
+    elif data_mode == "Historical":
         with c2_live_placeholder.container():
             st.info("📅 Historical Mode Active")
             selected_date = st.date_input("Select Past Date:", value=None)
