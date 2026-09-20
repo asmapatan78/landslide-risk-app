@@ -78,10 +78,22 @@ with c4:
 # COLUMN 5: SAFETY MAP SYSTEM
 # =====================================
 with c5:
-    st.subheader("🗺️ 5. Safety Map")
-    with st.container(border=True):
-        st.caption(f"Mapped for: {selected_loc}")
-
+        st.subheader("🗺️ 5. Safety Map")
+        with st.container(border=True):
+            st.caption(f"Mapped for: {selected_loc}")
+            
+            coords_dict = {
+                "Gangtok, Sikkim": {"lat": 27.3314, "lon": 88.6138},
+                "Guwahati, Assam": {"lat": 26.1445, "lon": 91.7362},
+                "Shillong, Meghalaya": {"lat": 25.5788, "lon": 91.8933},
+                "Imphal, Manipur": {"lat": 24.8170, "lon": 93.9368},
+                "Aizawl, Mizoram": {"lat": 23.7271, "lon": 92.7176},
+                "Kohima, Nagaland": {"lat": 25.6586, "lon": 94.1027}
+            }
+            
+            loc_coords = coords_dict.get(selected_loc, {"lat": 27.3314, "lon": 88.6138})
+            map_df = pd.DataFrame([loc_coords])
+            st.map(map_df, zoom=11, use_container_width=True)
 st.divider()
 
 if "rainfall_history" not in st.session_state:
