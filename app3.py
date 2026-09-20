@@ -202,8 +202,8 @@ while True:
             st.info("📅 Historical Mode Active")
             selected_date = st.date_input("Select Past Date:", value=None)
             
-            st.caption("📊 Historical Monthly Average Risk")
-            hist_data = pd.DataFrame({"Risk %":}, 
+           st.caption("📊 Historical Monthly Average Risk")
+            hist_data = pd.DataFrame({"Risk %": [20, 25, 45, 60, 85, 70, 40]}, 
                                      index=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"])
             st.bar_chart(hist_data, height=130)
             
