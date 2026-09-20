@@ -119,7 +119,7 @@ def send_automated_alerts(risk_val, location, rainfall_val):
 
         message_sms = client.messages.create(
             from_='+17372508034',
-            body=f"SMS ALERT: High Landslide Risk ({risk_val}%) detected in {location}",
+            body=f"Sent from your Twilio trial account - High Landslide Risk ({risk_val}%) detected in {location}",
             to='+919491850877'
         )
         
@@ -127,6 +127,7 @@ def send_automated_alerts(risk_val, location, rainfall_val):
         
     except Exception as e:
         st.error(f"❌ Failed to send SMS Alert. Error: {e}")
+    
 # ---------------------------------------------------------------------
 # LIVE DATA, MODE CONTROL & AUTOMATED ALERT LOOP
 # ---------------------------------------------------------------------
