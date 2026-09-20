@@ -112,9 +112,11 @@ import streamlit as st
 
 def send_automated_alerts(risk_val, location, rainfall_val):
     try:
-        account_sid = 'AC6344c392e383b1951a8941920a1ef0af'
-        auth_token = '43553a1d8124c880ee7aa1630132df9e'
-        client = Client(account_sid, auth_token)
+        account_sid = st.secrets["TWILIO_API_SID"]
+        auth_token = st.secrets["TWILIO_API_SECRET"]
+        main_account_sid = st.secrets["TWILIO_MAIN_SID"]
+        
+        client = Client(account_sid, auth_token, main_account_sid)
 
         message_sms = client.messages.create(
             from_='+17372508034',
