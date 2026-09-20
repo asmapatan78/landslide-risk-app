@@ -117,7 +117,6 @@ def send_automated_alerts(risk_val, location, rainfall_val):
         
         client = Client(account_sid, auth_token)
 
-        # Twilio Trial Accounts లో +91 నెంబర్లకు అనుమతించబడే అధికారిక డీఫాల్ట్ కోడ్ బాడీ
         message_sms = client.messages.create(
             from_='+17372508034',
             body="Your verification code is 123456",
