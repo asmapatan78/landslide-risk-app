@@ -144,6 +144,11 @@ def send_automated_alerts(risk_val, location, rainfall_val):
 # ---------------------------------------------------------------------
 alert_sent = False
 
+# ---------------------------------------------------------------------
+# LIVE DATA, MODE CONTROL & AUTOMATED ALERT LOOP
+# ---------------------------------------------------------------------
+alert_sent = False
+
 while True:
     import random
     
@@ -167,7 +172,8 @@ while True:
             st.line_chart(st.session_state.rainfall_history, height=130)
             
         with c4_live_placeholder.container():
-            calculated_risk = 0
+            calculated_risk = 45 # డిఫాల్ట్ బేస్లైన్ రిస్క్
+            
             if model is not None and FEATURES is not None:
                 try:
                     input_row = pd.DataFrame([{
@@ -178,15 +184,15 @@ while True:
                     risk_pct = model.predict_proba(input_row) * 100
                     calculated_risk = int(risk_pct)
                 except:
-                    calculated_risk = 80 if live_rainfall > 3200 else 45
+                    calculated_risk = 80 if live_rainfall > 3500 else 45
             else:
-                calculated_risk = 80 if live_rainfall > 3200 else 45
+                calculated_risk = 80 if live_rainfall > 3500 else 45
                 
             st.metric(label="Risk Level", value=f"{calculated_risk}%")
             
+            # రిస్క్ మరియు అలర్ట్ మెసేజ్ ఒకదానికొకటి సింక్ అవ్వడానికి కండిషన్
             if calculated_risk >= 70:
                 st.error("🚨 CRITICAL ALERT: High Landslide Susceptibility!")
-                
                 if not alert_sent:
                     st.toast("⚡ Triggering SMS & Email Alerts to Disaster Management Team...")
                     send_automated_alerts(calculated_risk, selected_loc, live_rainfall)
@@ -203,7 +209,7 @@ while True:
             selected_date = st.date_input("Select Past Date:", value=None)
             
             st.caption("📊 Historical Monthly Average Risk")
-            hist_data = pd.DataFrame({"Risk %": [20, 25, 45, 60, 85, 70, 40]}, 
+            hist_data = pd.DataFrame({"Risk %":}, 
                                      index=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"])
             st.bar_chart(hist_data, height=130)
             
