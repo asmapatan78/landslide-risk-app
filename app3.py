@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-
+import random
 # Page configuration for maximum width to fit all 5 columns side-by-side
 st.set_page_config(page_title="AI Risk Monitor - NER", layout="wide")
 
@@ -32,8 +32,9 @@ with c2:
     with st.container(border=True):
         ner_locations = ["Gangtok, Sikkim", "Guwahati, Assam", "Shillong, Meghalaya", "Imphal, Manipur", "Aizawl, Mizoram", "Kohima, Nagaland"]
         selected_loc = st.selectbox("Target NER:", options=ner_locations, index=0)
-        sub_surface = st.slider("Sub-surface (m)", min_value=100, max_value=3000, value=1600)
-        rainfall_volume = st.slider("Rainfall (mm)", min_value=0, max_value=5000, value=3500)
+        
+        c2_live_placeholder = st.empty() 
+        
         data_mode = st.radio("Data Mode:", options=["Regional", "Historical"])
 
 # =========================================================================
@@ -122,3 +123,13 @@ if st.button("🚀 Process System Integrity"):
     with st.spinner("Analyzing..."):
         time.sleep(1)
     st.success("🎯 Better safety achieved!")
+while True:
+    with c2_live_placeholder.container():
+        import random
+        live_sub_surface = random.randint(500, 3000)
+        live_rainfall = random.randint(0, 5000)
+        
+        st.metric(label="Sub-surface (m)", value=f"{live_sub_surface} m")
+        st.metric(label="Rainfall (mm)", value=f"{live_rainfall} mm")
+        
+    time.sleep(3)
