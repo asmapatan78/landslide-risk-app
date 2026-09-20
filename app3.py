@@ -199,19 +199,23 @@ while True:
                 alert_sent = False
                 
         time.sleep(3)
-        elif data_mode == "Historical":
+
+    elif data_mode == "Historical":
         with c2_live_placeholder.container():
             st.info("📅 Historical Mode Active")
             selected_date = st.date_input("Select Past Date:", value=None)
             
             st.caption("📊 Historical Monthly Average Risk")
-            hist_data = pd.DataFrame({"Risk %":}, 
+            hist_data = pd.DataFrame({"Risk %": [20, 25, 45, 60, 80, 85, 40]}, 
                                      index=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"])
             st.bar_chart(hist_data, height=130)
             
         with c4_live_placeholder.container():
             st.metric(label="Selected Date Risk", value="N/A")
             st.warning("Please choose a date from Column 2 to load offline records.")
+            
+        st.stop()
+
             
         st.stop()
         
