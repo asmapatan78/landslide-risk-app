@@ -108,7 +108,6 @@ if "rainfall_history" not in st.session_state:
 # ---------------------------------------------------------------------
 import smtplib
 from email.mime.text import MIMEText
-
 def send_automated_alerts(risk_val, location, rainfall_val):
     # 1. REAL SMS ALERT (Twilio)
     try:
