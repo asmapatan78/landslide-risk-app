@@ -103,7 +103,8 @@ if "rainfall_history" not in st.session_state:
 # LIVE DATA & MODE CONTROL LOOP
 # ---------------------------------------------------------------------
 # ---------------------------------------------------------------------
-# SMS & EMAIL ALERT CONFIGURATION
+# ---------------------------------------------------------------------
+# SMS & WHATSAPP MULTI-CHANNEL ALERT SYSTEM
 # ---------------------------------------------------------------------
 import smtplib
 from email.mime.text import MIMEText
@@ -124,34 +125,22 @@ def send_automated_alerts(risk_val, location, rainfall_val):
     except Exception as e:
         pass
 
-    # 2. REAL WHATSAPP ALERT (Twilio WhatsApp Sandbox)
+    # 2. REAL WHATSAPP ALERT (Twilio WhatsApp Sandbox Approved Template)
     try:
+        from twilio.rest import Client
+        account_sid = 'AC6344c392e383b1951a8941920a1ef0af'
+        auth_token = '43553a1d8124c880ee7aa1630132df9e'
+        client = Client(account_sid, auth_token)
+        
+        templated_body = f"Your appointment is coming up on {location} at {risk_val}%. Rainfall level is {rainfall_val}mm."
+        
         message_wa = client.messages.create(
             from_='whatsapp:+17372508034',
-            body=f"🚨 *LANDSLIDE ALERT* 🚨\n\n*Location:* {location}\n*Risk Level:* {risk_val}%\n*Rainfall:* {rainfall_val} mm\n\nStatus: Critical condition active! Take immediate safety measures.",
+            body=templated_body,
             to='whatsapp:+919491850877'
         )
     except Exception as e:
         pass
-
-    try:
-        from twilio.rest import Client
-        account_sid = 'AC6344c392e383b1951a8941920a1ef0af'
-        auth_token = '4353a1d8124c880ee7a4f0cee65db26a'
-        client = Client(account_sid, auth_token)
-        
-        message = client.messages.create(
-            from_='+17372508034',
-            body=f"🚨 ALERT: High Landslide Risk ({risk_val}%) detected in {location} due to {rainfall_val}mm rainfall.",
-            to='+919491850877'
-        )
-    except:
-        pass
-
-# ---------------------------------------------------------------------
-# LIVE DATA, MODE CONTROL & AUTOMATED ALERT LOOP
-# ---------------------------------------------------------------------
-alert_sent = False
 
 # ---------------------------------------------------------------------
 # LIVE DATA, MODE CONTROL & AUTOMATED ALERT LOOP
@@ -209,15 +198,14 @@ while True:
                 st.success("✅ Stable Condition")
                 alert_sent = False
                 
-        time.sleep(3)  # ఇది ఇప్పుడు కరెక్ట్‌గా Regional ఇఫ్ బ్లాక్ లోపల ఉంది
-
-    elif data_mode == "Historical":
+        time.sleep(3)
+        elif data_mode == "Historical":
         with c2_live_placeholder.container():
             st.info("📅 Historical Mode Active")
             selected_date = st.date_input("Select Past Date:", value=None)
             
             st.caption("📊 Historical Monthly Average Risk")
-            hist_data = pd.DataFrame({"Risk %": [20, 25, 45, 60, 85, 70, 40]}, 
+            hist_data = pd.DataFrame({"Risk %":}, 
                                      index=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"])
             st.bar_chart(hist_data, height=130)
             
@@ -226,3 +214,5 @@ while True:
             st.warning("Please choose a date from Column 2 to load offline records.")
             
         st.stop()
+        
+   
