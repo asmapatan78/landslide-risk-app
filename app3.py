@@ -67,11 +67,7 @@ with c4:
             # Elevation (sub_surface), Slope (infrastructure conversion), Aspect, Rainfall, NDVI, Land Cover
             slope_val = 22 if infrastructure_risk == "High" else (12 if infrastructure_risk == "Medium" else 5)
             ndvi_val = 0.50
-            
-            # Creating input array for features
-            features = np.array([[sub_surface, slope_val, 120, rainfall_volume, ndvi_val]])
-           except Exception as e:
-            c4_live_placeholder = st.empty() 
+            c4_live_placeholder = st.empty()     
            
 # COLUMN 5: SAFETY MAP SYSTEM
 # =========================================================================
