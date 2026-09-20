@@ -51,24 +51,19 @@ with c3:
 # COLUMN 4: RISK ASSESSMENT
 # =========================================================================
 with c4:
-    st.subheader("📈 4. Risk Assessment")
+    st.subheader("📉 4. Risk Assessment")
     with st.container(border=True):
         st.write("**Continuous Monitoring System Active**")
         
-        # Loading your machine learning model file safely
         import pickle
         import numpy as np
         
-        try:
-            with open("landslide_model.pkl", "rb") as f:
-                model = pickle.pickle.load(f) if hasattr(pickle, "pickle") else pickle.load(f)
-                
-            # Preparing input data according to your features format
-            # Elevation (sub_surface), Slope (infrastructure conversion), Aspect, Rainfall, NDVI, Land Cover
-            slope_val = 22 if infrastructure_risk == "High" else (12 if infrastructure_risk == "Medium" else 5)
-            ndvi_val = 0.50
-            c4_live_placeholder = st.empty()     
-           
+        with open("landslide_model.pkl", "rb") as f:
+            model = pickle.load(f)
+            
+        slope_val = 22
+        ndvi_val = 0.50
+        c4_live_placeholder = st.empty()
 # COLUMN 5: SAFETY MAP SYSTEM
 # =========================================================================
 with c5:
