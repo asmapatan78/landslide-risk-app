@@ -104,43 +104,25 @@ if "rainfall_history" not in st.session_state:
 # ---------------------------------------------------------------------
 # ---------------------------------------------------------------------
 # ---------------------------------------------------------------------
-# SMS & WHATSAPP MULTI-CHANNEL ALERT SYSTEM
-# ---------------------------------------------------------------------
+# SMS ALERT SYSTEM
 import smtplib
 from email.mime.text import MIMEText
+from twilio.rest import Client
+
 def send_automated_alerts(risk_val, location, rainfall_val):
     # 1. REAL SMS ALERT (Twilio)
     try:
-        from twilio.rest import Client
         account_sid = 'AC6344c392e383b1951a8941920a1ef0af'
         auth_token = '43553a1d8124c880ee7aa1630132df9e'
         client = Client(account_sid, auth_token)
-        
+
         message_sms = client.messages.create(
             from_='+17372508034',
-            body=f"🚨 SMS ALERT: High Landslide Risk ({risk_val}%) detected in {location} due to {rainfall_val}mm rainfall!",
+            body=f"SMS ALERT: High Landslide Risk ({risk_val}%) detected in {location}",
             to='+919491850877'
         )
     except Exception as e:
         pass
-
-    # 2. REAL WHATSAPP ALERT (Twilio WhatsApp Sandbox Approved Template)
-    try:
-        from twilio.rest import Client
-        account_sid = 'AC6344c392e383b1951a8941920a1ef0af'
-        auth_token = '43553a1d8124c880ee7aa1630132df9e'
-        client = Client(account_sid, auth_token)
-        
-        templated_body = f"Your appointment is coming up on {location} at {risk_val}%. Rainfall level is {rainfall_val}mm."
-        
-        message_wa = client.messages.create(
-            from_='whatsapp:+17372508034',
-            body=templated_body,
-            to='whatsapp:+919491850877'
-        )
-    except Exception as e:
-        pass
-
 # ---------------------------------------------------------------------
 # LIVE DATA, MODE CONTROL & AUTOMATED ALERT LOOP
 # ---------------------------------------------------------------------
