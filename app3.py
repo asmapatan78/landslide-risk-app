@@ -108,9 +108,9 @@ if "rainfall_history" not in st.session_state:
 import smtplib
 from email.mime.text import MIMEText
 from twilio.rest import Client
+import streamlit as st
 
 def send_automated_alerts(risk_val, location, rainfall_val):
-    # 1. REAL SMS ALERT (Twilio)
     try:
         account_sid = 'AC6344c392e383b1951a8941920a1ef0af'
         auth_token = '43553a1d8124c880ee7aa1630132df9e'
@@ -121,8 +121,11 @@ def send_automated_alerts(risk_val, location, rainfall_val):
             body=f"SMS ALERT: High Landslide Risk ({risk_val}%) detected in {location}",
             to='+919491850877'
         )
+        
+        st.success(f"✅ SMS Alert Sent Successfully to +919491850877! SID: {message_sms.sid}")
+        
     except Exception as e:
-        pass
+        st.error(f"❌ Failed to send SMS Alert. Error: {e}")
 # ---------------------------------------------------------------------
 # LIVE DATA, MODE CONTROL & AUTOMATED ALERT LOOP
 # ---------------------------------------------------------------------
