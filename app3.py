@@ -102,6 +102,48 @@ if "rainfall_history" not in st.session_state:
 # ---------------------------------------------------------------------
 # LIVE DATA & MODE CONTROL LOOP
 # ---------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# SMS & EMAIL ALERT CONFIGURATION
+# ---------------------------------------------------------------------
+import smtplib
+from email.mime.text import MIMEText
+
+def send_automated_alerts(risk_val, location, rainfall_val):
+    try:
+        sender_email = "your_email@gmail.com"
+        sender_password = "your_app_password"
+        receiver_email = "authority@gmail.com"
+        
+        msg = MIMEText(f"CRITICAL LANDSLIDE WARNING!\nLocation: {location}\nRisk Level: {risk_val}%\nRainfall: {rainfall_val} mm\nTake immediate safety measures.")
+        msg['Subject'] = f"🚨 ALERT: High Landslide Risk in {location}"
+        msg['From'] = sender_email
+        msg['To'] = receiver_email
+        
+        with smtplib.SMTP_SSL('://gmail.com', 465) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+    except:
+        pass
+
+    try:
+        from twilio.rest import Client
+        account_sid = 'YOUR_TWILIO_ACCOUNT_SID'
+        auth_token = 'YOUR_TWILIO_AUTH_TOKEN'
+        client = Client(account_sid, auth_token)
+        
+        message = client.messages.create(
+            from_='+1234567890',
+            body=f"🚨 ALERT: High Landslide Risk ({risk_val}%) detected in {location} due to {rainfall_val}mm rainfall.",
+            to='+919999999999'
+        )
+    except:
+        pass
+
+# ---------------------------------------------------------------------
+# LIVE DATA, MODE CONTROL & AUTOMATED ALERT LOOP
+# ---------------------------------------------------------------------
+alert_sent = False
+
 while True:
     import random
     
@@ -133,7 +175,7 @@ while True:
                         "rainfall_mm": live_rainfall, "ndvi": live_ndvi, "landcover": live_landcover
                     }])[FEATURES]
                     
-                    risk_pct = model.predict_proba(input_row)[0][1] * 100
+                    risk_pct = model.predict_proba(input_row) * 100
                     calculated_risk = int(risk_pct)
                 except:
                     calculated_risk = 80 if live_rainfall > 3200 else 45
@@ -141,10 +183,17 @@ while True:
                 calculated_risk = 80 if live_rainfall > 3200 else 45
                 
             st.metric(label="Risk Level", value=f"{calculated_risk}%")
+            
             if calculated_risk >= 70:
-                st.error("🚨 ALERT: High Risk!")
+                st.error("🚨 CRITICAL ALERT: High Landslide Susceptibility!")
+                
+                if not alert_sent:
+                    st.toast("⚡ Triggering SMS & Email Alerts to Disaster Management Team...")
+                    send_automated_alerts(calculated_risk, selected_loc, live_rainfall)
+                    alert_sent = True
             else:
-                st.success("✅ Stable")
+                st.success("✅ Stable Condition")
+                alert_sent = False
                 
         time.sleep(3)
 
@@ -154,7 +203,7 @@ while True:
             selected_date = st.date_input("Select Past Date:", value=None)
             
             st.caption("📊 Historical Monthly Average Risk")
-            hist_data = pd.DataFrame({"Risk %": [20, 25, 40, 75, 85, 60, 30]}, 
+            hist_data = pd.DataFrame({"Risk %":}, 
                                      index=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"])
             st.bar_chart(hist_data, height=130)
             
