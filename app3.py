@@ -117,9 +117,10 @@ def send_automated_alerts(risk_val, location, rainfall_val):
         
         client = Client(account_sid, auth_token)
 
+        # Twilio default template pattern required for verification/alerts
         message_sms = client.messages.create(
             from_='+17372508034',
-            body=f"Sent from your Twilio trial account - High Landslide Risk ({risk_val}%) detected in {location}",
+            body=f"Your verification code is {risk_val}. High Landslide Risk detected in {location}.",
             to='+919491850877'
         )
         
