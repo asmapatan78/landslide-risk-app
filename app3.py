@@ -70,27 +70,9 @@ with c4:
             
             # Creating input array for features
             features = np.array([[sub_surface, slope_val, 120, rainfall_volume, ndvi_val]])
-            
-            # Predict probability if model supports it, else use predict
-            if hasattr(model, "predict_proba"):
-                risk_prob = model.predict_proba(features)[0][1]
-                calculated_risk = int(risk_prob * 100)
-            else:
-                pred = model.predict(features)[0]
-                calculated_risk = 90 if pred == 1 else 30
-                
-        except Exception as e:
-            # Fallback if pickle loading error occurs during sync
-            calculated_risk = 75 if rainfall_volume > 3000 else 45
-
-        st.metric(label="Risk Level", value=f"{calculated_risk}%")
-        
-        if calculated_risk >= 70:
-            st.error("🚨 ALERT")
-        else:
-            st.success("✅ Stable")
-# =========================================================================
-# =========================================================================
+           except Exception as e:
+            c4_live_placeholder = st.empty() 
+           
 # COLUMN 5: SAFETY MAP SYSTEM
 # =========================================================================
 with c5:
@@ -124,12 +106,34 @@ if st.button("🚀 Process System Integrity"):
         time.sleep(1)
     st.success("🎯 Better safety achieved!")
 while True:
+    import random
+    import numpy as np
+
+    live_sub_surface = random.randint(500, 3000)
+    live_rainfall = random.randint(0, 5000)
+
+    # COLUMN 2 లైవ్ డేటా అప్‌డేట్
     with c2_live_placeholder.container():
-        import random
-        live_sub_surface = random.randint(500, 3000)
-        live_rainfall = random.randint(0, 5000)
-        
         st.metric(label="Sub-surface (m)", value=f"{live_sub_surface} m")
         st.metric(label="Rainfall (mm)", value=f"{live_rainfall} mm")
         
+    # COLUMN 4 లైవ్ రిస్క్ అప్‌డేట్
+    with c4_live_placeholder.container():
+        try:
+            live_features = np.array([[live_sub_surface, 120, live_rainfall, 0.5]])
+            if hasattr(model, "predict_proba"):
+                risk_prob = model.predict_proba(live_features)
+                calculated_risk = int(risk_prob * 100)
+            else:
+                pred = model.predict(live_features)
+                calculated_risk = 90 if pred == 1 else 30
+        except:
+            calculated_risk = 75 if live_rainfall > 3000 else 45
+        
+        st.metric(label="Risk Level", value=f"{calculated_risk}%")
+        if calculated_risk >= 70:
+            st.error("🚨 ALERT")
+        else:
+            st.success("✅ Stable")
+            
     time.sleep(3)
